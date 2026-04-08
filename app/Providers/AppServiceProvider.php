@@ -70,13 +70,25 @@ class AppServiceProvider extends ServiceProvider
 
         Sendportal::setSidebarHtmlContentResolver(
             static function () {
-                return view('layouts.sidebar.manageUsersMenuItem')->render();
+                try {
+                    return view('layouts.sidebar.manageUsersMenuItem')->render();
+                } catch (\Throwable $e) {
+                    \Log::warning('Unable to render custom sidebar content: ' . $e->getMessage());
+
+                    return '';
+                }
             }
         );
 
         Sendportal::setHeaderHtmlContentResolver(
             static function () {
-                return view('layouts.header.userManagementHeader')->render();
+                try {
+                    return view('layouts.header.userManagementHeader')->render();
+                } catch (\Throwable $e) {
+                    \Log::warning('Unable to render custom header content: ' . $e->getMessage());
+
+                    return '';
+                }
             }
         );
 
