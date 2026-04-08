@@ -30,12 +30,32 @@ trait HasWorkspaces
 
     public function hasWorkspaces(): bool
     {
-        return $this->workspaces->count() > 0;
+        if (! $this->exists) {
+            return false;
+        }
+
+        if ($this->relationLoaded('workspaces')) {
+            $workspaces = $this->getRelation('workspaces');
+
+            return ($workspaces?->count() ?? 0) > 0;
+        }
+
+        return $this->workspaces()->exists();
     }
 
-    public function onWorkspace(Workspace $workspace): bool
+    public function onWorkspace(?Workspace $workspace): bool
     {
-        return $this->workspaces->contains($workspace);
+        if (! $workspace || ! $this->exists) {
+            return false;
+        }
+
+        if ($this->relationLoaded('workspaces')) {
+            $workspaces = $this->getRelation('workspaces');
+
+            return $workspaces ? $workspaces->contains($workspace) : false;
+        }
+
+        return $this->workspaces()->whereKey($workspace->id)->exists();
     }
 
     public function ownsWorkspace(Workspace $workspace): bool
@@ -50,15 +70,23 @@ trait HasWorkspaces
         }
 
         if ($this->current_workspace_id) {
-            $this->switchToWorkspace(Workspace::find($this->current_workspace_id));
+            $workspace = Workspace::find($this->current_workspace_id);
 
-            return $this->activeWorkspace->id;
+            if ($workspace && $this->onWorkspace($workspace)) {
+                $this->switchToWorkspace($workspace);
+
+                return $this->activeWorkspace->id;
+            }
         }
 
         if ($this->activeWorkspace === null && $this->hasWorkspaces()) {
-            $this->switchToWorkspace($this->workspaces()->first());
+            $workspace = $this->workspaces()->first();
 
-            return $this->activeWorkspace->id;
+            if ($workspace) {
+                $this->switchToWorkspace($workspace);
+
+                return $this->activeWorkspace->id;
+            }
         }
 
         return null;
@@ -93,15 +121,23 @@ trait HasWorkspaces
         }
 
         if ($this->current_workspace_id) {
-            $this->switchToWorkspace(Workspace::find($this->current_workspace_id));
+            $workspace = Workspace::find($this->current_workspace_id);
 
-            return $this->activeWorkspace;
+            if ($workspace && $this->onWorkspace($workspace)) {
+                $this->switchToWorkspace($workspace);
+
+                return $this->activeWorkspace;
+            }
         }
 
         if ($this->activeWorkspace === null && $this->hasWorkspaces()) {
-            $this->switchToWorkspace($this->workspaces()->first());
+            $workspace = $this->workspaces()->first();
 
-            return $this->activeWorkspace;
+            if ($workspace) {
+                $this->switchToWorkspace($workspace);
+
+                return $this->activeWorkspace;
+            }
         }
 
         return null;
