@@ -8,6 +8,17 @@
 
 @section('content')
 
+@php
+    $columns = $contactList->columns;
+
+    if (is_string($columns)) {
+        $decoded = json_decode($columns, true);
+        $columns = is_array($decoded) ? $decoded : [];
+    }
+
+    $columns = is_array($columns) ? $columns : [];
+@endphp
+
 <div class="row mb-4">
     <div class="col-md-12">
         <div class="btn-group" role="group">
@@ -29,14 +40,14 @@
         <strong>{{ __('Total Contacts:') }}</strong> {{ $subscribers->total() }}
         <br>
         <strong>{{ __('Detected Columns:') }}</strong>
-        {{ !empty($contactList->columns) ? implode(', ', $contactList->columns) : __('No columns detected yet') }}
+        {{ count($columns) > 0 ? implode(', ', $columns) : __('No columns detected yet') }}
     </div>
 </div>
 
 <div class="card">
     <div class="card-table table-responsive">
         @php
-            $displayColumns = !empty($contactList->columns) ? $contactList->columns : ['email', 'first_name', 'last_name'];
+            $displayColumns = count($columns) > 0 ? $columns : ['email', 'first_name', 'last_name'];
         @endphp
         <table class="table mb-0">
             <thead>
