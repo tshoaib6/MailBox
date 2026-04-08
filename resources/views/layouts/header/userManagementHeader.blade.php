@@ -1,25 +1,29 @@
 @auth()
     <ul class="navbar-nav flex-row ml-md-auto d-md-flex">
-        @php $workspaces = auth()->user()->workspaces @endphp
+        @php
+            $workspaces = auth()->user()->workspaces ?? collect();
+            $workspaceCount = $workspaces instanceof \Illuminate\Support\Collection ? $workspaces->count() : count((array) $workspaces);
+            $currentWorkspace = auth()->user()->currentWorkspace;
+        @endphp
 
-        @if (count($workspaces) == 1)
+        @if ($workspaceCount === 1 && $currentWorkspace)
             <li class="nav-item mr-5 px-2">
             <span class="nav-link" id="bd-versions" aria-haspopup="true" aria-expanded="false">
-                 {{ auth()->user()->currentWorkspace->name }}
+                 {{ $currentWorkspace->name }}
             </span>
             </li>
-        @elseif (count($workspaces) > 1 && auth()->user()->currentWorkspace)
+        @elseif ($workspaceCount > 1 && $currentWorkspace)
             <li class="nav-item dropdown mr-4 px-2 workspace-select">
                 <a class="nav-link dropdown-toggle color-purple-500" href="#" id="bd-versions"
                    data-toggle="dropdown"
                    aria-haspopup="true" aria-expanded="false">
-                    {{ auth()->user()->currentWorkspace->name }}<i class="ml-2 fas fa-caret-down color-gray-500"></i>
+                    {{ $currentWorkspace->name }}<i class="ml-2 fas fa-caret-down color-gray-500"></i>
                 </a>
 
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="bd-versions">
                     @foreach($workspaces as $workspace)
                         <a class="dropdown-item px-3" href="{{ route('workspaces.switch', $workspace->id) }}">
-                            <i class="fas fa-circle mr-2 {{ auth()->user()->currentWorkspace->id == $workspace->id ? 'color-purple-500' : 'color-gray-300' }}"></i>{{ $workspace->name }}
+                            <i class="fas fa-circle mr-2 {{ $currentWorkspace->id == $workspace->id ? 'color-purple-500' : 'color-gray-300' }}"></i>{{ $workspace->name }}
                         </a>
                     @endforeach
                 </div>
