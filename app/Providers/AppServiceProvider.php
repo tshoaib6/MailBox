@@ -41,6 +41,11 @@ class AppServiceProvider extends ServiceProvider
             \Sendportal\Base\Services\Messages\MarkAsSent::class,
             \App\Services\Messages\MarkAsSent::class
         );
+
+        $this->app->bind(
+            \Sendportal\Base\Http\Controllers\Subscribers\SubscribersImportController::class,
+            \App\Http\Controllers\Subscribers\SubscribersImportController::class
+        );
     }
 
     public function boot(): void
