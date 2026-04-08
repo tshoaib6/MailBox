@@ -59,8 +59,26 @@ class AppServiceProvider extends ServiceProvider
                 $request = request();
                 $workspaceId = null;
 
-                if ($user && $user->currentWorkspaceId()) {
-                    $workspaceId = $user->currentWorkspaceId();
+                if ($user) {
+                    if (! empty($user->current_workspace_id)) {
+                        $workspaceId = (int) $user->current_workspace_id;
+                    } else {
+                        $workspaceId = (int) DB::table('workspace_users')
+                            ->where('user_id', $user->id)
+                            ->orderBy('workspace_id')
+                            ->value('workspace_id');
+
+                        if ($workspaceId) {
+                            DB::table('users')
+                                ->where('id', $user->id)
+                                ->update([
+                                    'current_workspace_id' => $workspaceId,
+                                    'updated_at' => now(),
+                                ]);
+
+                            $user->current_workspace_id = $workspaceId;
+                        }
+                    }
                 } elseif ($request && (($apiToken = $request->bearerToken()) || ($apiToken = $request->get('api_token')))) {
                     $workspaceId = ApiToken::resolveWorkspaceId($apiToken);
                 }
