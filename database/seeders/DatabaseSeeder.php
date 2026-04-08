@@ -16,8 +16,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->seedAdminUser('admin@eraxon.com');
+        $this->seedAdminUser('admin@sendportal.local');
+    }
+
+    private function seedAdminUser(string $email): void
+    {
         $user = User::updateOrCreate(
-            ['email' => 'admin@eraxon.com'],
+            ['email' => $email],
             [
                 'name' => 'Admin',
                 'email_verified_at' => now(),
