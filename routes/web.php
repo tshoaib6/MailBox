@@ -116,6 +116,13 @@ Route::namespace('Workspaces')->middleware(
 
 Route::middleware(['auth', 'verified', RequireWorkspace::class])->group(
     static function () {
+        // Override vendor import routes (registered after so they take precedence).
+        // Fixes: vendor hardcodes .csv extension, breaking Excel (.xlsx) uploads.
+        Route::get('subscribers/import', [SubscribersImportController::class, 'show'])
+            ->name('sendportal.subscribers.import');
+        Route::post('subscribers/import', [SubscribersImportController::class, 'store'])
+            ->name('sendportal.subscribers.import.store');
+
         Sendportal::webRoutes();
 
         // Contact Lists Management
@@ -123,14 +130,6 @@ Route::middleware(['auth', 'verified', RequireWorkspace::class])->group(
         // Override subscribers index to show contact lists instead of individual subscribers.
         Route::get('subscribers', [SubscribersController::class, 'index'])
             ->name('sendportal.subscribers.index');
-
-
-        // Override vendor import routes (registered after so they take precedence).
-        // Fixes: vendor hardcodes .csv extension, breaking Excel (.xlsx) uploads.
-        Route::get('subscribers/import', [SubscribersImportController::class, 'show'])
-            ->name('sendportal.subscribers.import');
-        Route::post('subscribers/import', [SubscribersImportController::class, 'store'])
-            ->name('sendportal.subscribers.import.store');
 
         // Campaign contact-preview endpoint (returns rendered HTML with real subscriber data).
         Route::post('campaigns', [CampaignsController::class, 'store'])
