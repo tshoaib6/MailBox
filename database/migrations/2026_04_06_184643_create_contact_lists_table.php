@@ -18,7 +18,7 @@ return new class extends Migration
             $table->json('columns')->nullable()->comment('Array of CSV column names: ["email", "first_name", "company"]');
             $table->timestamps();
 
-            $table->foreign('workspace_id')->references('id')->on('sendportal_workspaces')->onDelete('cascade');
+            $table->foreign('workspace_id')->references('id')->on('workspaces')->onDelete('cascade');
             $table->unique(['workspace_id', 'name']);
         });
     }
