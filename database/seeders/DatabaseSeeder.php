@@ -16,25 +16,25 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->seedAdminUser('admin@eraxon.com');
-        $this->seedAdminUser('admin@sendportal.local');
+        $this->seedAdminUser('admin@eraxon.com', 'Admin', 'qwerty', 'Default Workspace');
+        $this->seedAdminUser('admin@sendportal.local', 'Shoaib Admin', 'password', 'My Workspace');
     }
 
-    private function seedAdminUser(string $email): void
+    private function seedAdminUser(string $email, string $name, string $password, string $workspaceName): void
     {
         $user = User::updateOrCreate(
             ['email' => $email],
             [
-                'name' => 'Admin',
+                'name' => $name,
                 'email_verified_at' => now(),
-                'password' => Hash::make('qwerty'),
+                'password' => Hash::make($password),
                 'locale' => 'en',
             ]
         );
 
         $workspace = Workspace::firstOrCreate(
             ['owner_id' => $user->id],
-            ['name' => 'Default Workspace']
+            ['name' => $workspaceName]
         );
 
         $workspace->users()->syncWithoutDetaching([
