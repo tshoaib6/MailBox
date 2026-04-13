@@ -73,6 +73,7 @@ class CampaignsController extends BaseCampaignsController
     {
         $workspaceId = Sendportal::currentWorkspaceId();
         $campaign = $this->campaigns->find($workspaceId, $id, ['status', 'template', 'email_service']);
+        $campaign?->loadMissing('email_service.type');
 
         $messages = Message::where('workspace_id', $workspaceId)
             ->where('source_type', \Sendportal\Base\Models\Campaign::class)

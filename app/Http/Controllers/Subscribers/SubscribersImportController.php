@@ -85,11 +85,6 @@ class SubscribersImportController extends BaseImportController
                     return;
                 }
 
-                // Optional id should only be used when it is numeric.
-                if (isset($data['id']) && $data['id'] !== null && !is_numeric((string) $data['id'])) {
-                    unset($data['id']);
-                }
-
                 $data['tags'] = $request->get('tags') ?? [];
                 $data['contact_list_id'] = $contactList->id;
 
@@ -218,16 +213,12 @@ class SubscribersImportController extends BaseImportController
      */
     private function normalizeLine(array $line): array
     {
-        $data = Arr::only($line, ['id', 'email', 'first_name', 'last_name']);
+        $data = Arr::only($line, ['email', 'first_name', 'last_name']);
 
         $aliases = [];
         foreach ($line as $key => $value) {
             $normalizedKey = $this->normalizeHeader((string) $key);
             $aliases[$normalizedKey] = $value;
-        }
-
-        if (empty($data['id'])) {
-            $data['id'] = $this->firstAliasValue($aliases, ['id', 'subscriber id', 'subscriber_id']);
         }
 
         if (empty($data['email'])) {

@@ -84,13 +84,21 @@ class MergeContentService extends BaseMergeContentService
                 $csvValue = $subscriberMeta[$mapping->csv_column] ?? null;
                 if ($csvValue !== null) {
                     $value = $this->stringifyValue($csvValue);
-                    $tags[$mapping->merge_variable] = $value;
+                    if (! $this->hasFilledTag($tags, (string) $mapping->merge_variable)) {
+                        $tags[$mapping->merge_variable] = $value;
+                    }
 
                     // Support direct header-style tags too, e.g. {{Serial Number}}.
-                    $tags[trim((string) $mapping->csv_column)] = $value;
+                    $headerTag = trim((string) $mapping->csv_column);
+                    if ($headerTag !== '' && ! $this->hasFilledTag($tags, $headerTag)) {
+                        $tags[$headerTag] = $value;
+                    }
 
                     // Support normalized tag format, e.g. {{serial_number}}.
-                    $tags[$this->normalizeVariable((string) $mapping->csv_column)] = $value;
+                    $normalizedTag = $this->normalizeVariable((string) $mapping->csv_column);
+                    if ($normalizedTag !== '' && ! $this->hasFilledTag($tags, $normalizedTag)) {
+                        $tags[$normalizedTag] = $value;
+                    }
                 }
             }
 
@@ -134,6 +142,15 @@ class MergeContentService extends BaseMergeContentService
         }
 
         return (string) $value;
+    }
+
+    private function hasFilledTag(array $tags, string $key): bool
+    {
+        if (! array_key_exists($key, $tags)) {
+            return false;
+        }
+
+        return trim((string) $tags[$key]) !== '';
     }
 
     private function shouldTrackOpens(Message $message): bool
