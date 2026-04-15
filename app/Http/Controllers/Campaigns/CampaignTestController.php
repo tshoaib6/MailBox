@@ -8,12 +8,14 @@ use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Sendportal\Base\Facades\Sendportal;
 use Sendportal\Base\Models\Campaign;
 use Sendportal\Base\Models\Message;
 use Sendportal\Base\Models\Subscriber;
 use Sendportal\Base\Repositories\Campaigns\CampaignTenantRepositoryInterface;
 use Sendportal\Base\Services\Messages\DispatchTestMessage;
+use Throwable;
 
 class CampaignTestController extends Controller
 {
@@ -54,10 +56,24 @@ class CampaignTestController extends Controller
             $subscriber = $subscriberQuery->find($subscriberId);
         }
 
-        if (! empty($subscriber)) {
-            $messageId = $this->dispatchWithSubscriber($workspaceId, $campaignId, $recipientEmail, $subscriber);
-        } else {
-            $messageId = $this->dispatchTestMessage->handle($workspaceId, $campaignId, $recipientEmail);
+        try {
+            if (! empty($subscriber)) {
+                $messageId = $this->dispatchWithSubscriber($workspaceId, $campaignId, $recipientEmail, $subscriber);
+            } else {
+                $messageId = $this->dispatchTestMessage->handle($workspaceId, $campaignId, $recipientEmail);
+            }
+        } catch (Throwable $exception) {
+            Log::error(
+                'Test email dispatch failed campaign=' . $campaignId
+                . ' recipient=' . $recipientEmail
+                . ' error=' . $exception->getMessage()
+                . ' trace=' . $exception->getTraceAsString(),
+                ['exception' => $exception]
+            );
+
+            return redirect()->route('sendportal.campaigns.preview', $campaignId)
+                ->withInput()
+                ->with(['error' => __('Test email failed: :message', ['message' => $exception->getMessage()])]);
         }
 
         if (! $messageId) {

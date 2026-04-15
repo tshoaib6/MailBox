@@ -1,0 +1,1 @@
+{"version":2,"defects":[],"times":{"Tests\\Unit\\Support\\Campaigns\\SendResultTest::it_maps_a_250_data_response_to_delivered":0.013,"Tests\\Unit\\Support\\Campaigns\\SendResultTest::it_maps_535_auth_failures_to_rejected_results_with_error_detail":0,"Tests\\Unit\\Support\\Campaigns\\CampaignSendReportServiceTest::it_builds_summary_counts_and_failed_recipient_details":0.004}}

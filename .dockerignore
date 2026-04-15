@@ -1,0 +1,34 @@
+# Never send .git history into the build context
+.git
+.github
+
+# Local env files — these are never baked into the image
+.env
+.env.*
+!.env.docker.example
+
+# Vendor is installed fresh by composer inside Docker
+# (our custom files in docker/vendor-patches/ override them after install)
+/vendor
+
+# Node modules
+node_modules
+
+# Test files
+tests/
+phpunit.xml*
+.phpunit.result.cache
+
+# IDE / OS files
+.idea
+.DS_Store
+*.swp
+
+# Storage runtime caches (populated at container startup)
+storage/framework/cache/data/*
+storage/framework/views/*
+storage/framework/sessions/*
+storage/logs/*.log
+
+# Docs
+README.md

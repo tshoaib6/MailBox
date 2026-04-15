@@ -1,5 +1,18 @@
 <div class="main-wrapper col p-0 min-vh-100">
 
+    <style>
+        /* Keep mobile modal sidebar out of normal layout flow unless explicitly opened. */
+        #sidebar-modal {
+            display: none;
+        }
+
+        @media (max-width: 1199.98px) {
+            #sidebar-modal.show {
+                display: block;
+            }
+        }
+    </style>
+
     <div class="modal modal-left fade sidebar" id="sidebar-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable bg-purple-100 mh-100" role="document">
             <div class="modal-content border-0 rounded-0 mh-100">

@@ -116,14 +116,14 @@ Route::namespace('Workspaces')->middleware(
 
 Route::middleware(['auth', 'verified', RequireWorkspace::class])->group(
     static function () {
+        Sendportal::webRoutes();
+
         // Override vendor import routes (registered after so they take precedence).
         // Fixes: vendor hardcodes .csv extension, breaking Excel (.xlsx) uploads.
         Route::get('subscribers/import', [SubscribersImportController::class, 'show'])
             ->name('sendportal.subscribers.import');
         Route::post('subscribers/import', [SubscribersImportController::class, 'store'])
             ->name('sendportal.subscribers.import.store');
-
-        Sendportal::webRoutes();
 
         // Contact Lists Management
         Route::resource('contact-lists', ContactListsController::class);
@@ -136,6 +136,8 @@ Route::middleware(['auth', 'verified', RequireWorkspace::class])->group(
             ->name('sendportal.campaigns.store');
         Route::get('campaigns/{id}', [CampaignsController::class, 'show'])
             ->name('sendportal.campaigns.show');
+        Route::get('campaigns/{id}/download-not-sent', [CampaignsController::class, 'downloadNotSent'])
+            ->name('sendportal.campaigns.download-not-sent');
         Route::post('campaigns/{id}/dispatch-now', [CampaignsController::class, 'dispatchNow'])
             ->name('sendportal.campaigns.dispatch-now');
         Route::put('campaigns/{id}', [CampaignsController::class, 'update'])

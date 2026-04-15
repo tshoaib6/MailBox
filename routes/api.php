@@ -16,3 +16,7 @@ Route::middleware([
 
 // Non-auth'd API routes.
 Sendportal::publicApiRoutes();
+
+// smtp2go webhook (no auth — must be publicly reachable by smtp2go servers).
+Route::post('v1/webhooks/smtp2go', [\App\Http\Controllers\Webhooks\Smtp2goWebhooksController::class, 'handle'])
+    ->name('sendportal.api.webhooks.smtp2go');

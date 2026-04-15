@@ -23,7 +23,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('sp:campaigns:dispatch')->everyMinute()->withoutOverlapping();
+        // SendPortal already registers this scheduler entry in its package service provider.
+
+        // Sync smtp2go delivery, open, click, bounce events every 15 minutes.
+        $schedule->command('smtp2go:sync-activity --days=3')
+            ->everyFifteenMinutes()
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/smtp2go-sync.log'));
     }
 
     /**

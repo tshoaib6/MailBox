@@ -1,0 +1,88 @@
+services:
+
+  # ── Application (PHP-FPM + Nginx + Scheduler + Queue in one container) ──────
+  app:
+    image: ${DOCKER_USERNAME}/sendportal:${IMAGE_TAG:-latest}
+    container_name: sendportal_app
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    environment:
+      APP_NAME: ${APP_NAME:-"Dnova Email Marketing"}
+      APP_ENV: production
+      APP_KEY: ${APP_KEY}
+      APP_DEBUG: "false"
+      APP_URL: ${APP_URL}
+
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      QUEUE_CONNECTION: redis
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+
+      BROADCAST_DRIVER: log
+      LOG_CHANNEL: stack
+      LOG_LEVEL: error
+
+      MAIL_MAILER: smtp
+      MAIL_TIMEOUT: 60
+    volumes:
+      - storage_uploads:/var/www/storage/app/public
+      - storage_logs:/var/www/storage/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - sendportal
+
+  # ── MySQL ───────────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: sendportal_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - sendportal
+
+  # ── Redis ────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: sendportal_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - sendportal
+
+volumes:
+  mysql_data:
+  redis_data:
+  storage_uploads:
+  storage_logs:
+
+networks:
+  sendportal:
+    driver: bridge

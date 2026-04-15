@@ -62,18 +62,69 @@
 </div>
 
 <div class="row mb-4">
-    <div class="col-md-2 offset-md-10">
+    <div class="col-md-2">
         <div class="card"><div class="card-body text-danger"><strong>{{ __('Failed') }}:</strong><br>{{ $recipientStats['failed'] }}</div></div>
+    </div>
+    <div class="col-md-2">
+        <div class="card"><div class="card-body text-warning"><strong>{{ __('Not Sent') }}:</strong><br>{{ $recipientStats['not_sent'] }}</div></div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="card"><div class="card-body text-danger"><strong>{{ __('Rejected') }}:</strong><br>{{ $recipientStats['rejected'] }}</div></div>
+    </div>
+    <div class="col-md-2">
+        <div class="card"><div class="card-body text-warning"><strong>{{ __('Errors') }}:</strong><br>{{ $recipientStats['errors'] }}</div></div>
     </div>
 </div>
 
 <div class="card">
-    <div class="card-header">{{ __('Recipient Status Details') }}</div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <ul class="nav nav-tabs card-header-tabs mb-0">
+                <li class="nav-item">
+                    <a class="nav-link {{ $filter === 'all' ? 'active' : '' }}"
+                       href="{{ route('sendportal.campaigns.show', $campaign->id) }}?filter=all">
+                        {{ __('All') }} <span class="badge badge-secondary">{{ $recipientStats['total'] }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ $filter === 'sent' ? 'active' : '' }}"
+                       href="{{ route('sendportal.campaigns.show', $campaign->id) }}?filter=sent">
+                        {{ __('Sent') }} <span class="badge badge-success">{{ $recipientStats['sent'] }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ $filter === 'not_sent' ? 'active' : '' }}"
+                       href="{{ route('sendportal.campaigns.show', $campaign->id) }}?filter=not_sent">
+                        {{ __('Not Sent') }} <span class="badge badge-warning">{{ $recipientStats['not_sent'] }}</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ $filter === 'failed' ? 'active' : '' }}"
+                       href="{{ route('sendportal.campaigns.show', $campaign->id) }}?filter=failed">
+                        {{ __('Failed / Bounced') }} <span class="badge badge-danger">{{ $recipientStats['failed'] }}</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        @if($recipientStats['not_sent'] > 0)
+        <a href="{{ route('sendportal.campaigns.download-not-sent', $campaign->id) }}"
+           class="btn btn-sm btn-outline-danger">
+            <i class="fa fa-download"></i> {{ __('Download Not Sent') }} ({{ $recipientStats['not_sent'] }})
+        </a>
+        @endif
+    </div>
     <div class="card-table table-responsive">
         <table class="table mb-0">
             <thead>
                 <tr>
                     <th>{{ __('Email') }}</th>
+                    <th>{{ __('Status') }}</th>
+                    <th>{{ __('SMTP Code') }}</th>
+                    <th>{{ __('Detail') }}</th>
+                    <th>{{ __('Attempted At') }}</th>
                     <th>{{ __('Email Service') }}</th>
                     <th>{{ __('Queued At') }}</th>
                     <th>{{ __('Sent At') }}</th>
@@ -90,6 +141,14 @@
                 @forelse($messages as $message)
                     <tr>
                         <td>{{ $message->recipient_email }}</td>
+                        <td>
+                            @include('sendportal::messages.partials.status-row')
+                        </td>
+                        <td>{{ $message->smtp_code ?? '—' }}</td>
+                        <td>
+                            {{ $message->error_detail ?: ($message->smtp_message ?? '—') }}
+                        </td>
+                        <td>{{ optional($message->attempted_at)->format('M d, Y H:i:s') ?? '—' }}</td>
                         <td>
                             {{ optional($campaign->email_service)->name ?? '—' }}
                             @if(optional(optional($campaign->email_service)->type)->name)
@@ -108,7 +167,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="11" class="text-center text-muted py-4">{{ __('No recipients yet. Send the campaign to generate messages.') }}</td>
+                        <td colspan="16" class="text-center text-muted py-4">{{ __('No recipients yet. Send the campaign to generate messages.') }}</td>
                     </tr>
                 @endforelse
             </tbody>

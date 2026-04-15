@@ -31,12 +31,17 @@ class ContactListsController extends Controller
     /**
      * Show subscribers for a single contact list.
      */
-    public function show(int $id): View
+    public function show(int $id): View|RedirectResponse
     {
         $workspaceId = Sendportal::currentWorkspaceId();
 
         $contactList = ContactList::where('workspace_id', $workspaceId)
-            ->findOrFail($id);
+            ->find($id);
+
+        if (! $contactList) {
+            return redirect()->route('contact-lists.index')
+                ->with('error', __('Contact list not found in your current workspace.'));
+        }
 
         $subscribers = DB::table('sendportal_subscribers')
             ->where('workspace_id', $workspaceId)

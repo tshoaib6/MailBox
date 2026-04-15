@@ -88,6 +88,13 @@ return [
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
 
+    'bounce_address' => [
+        'address' => env('MAIL_BOUNCE_ADDRESS'),
+        'name' => env('MAIL_BOUNCE_NAME'),
+    ],
+
+    'timeout' => env('MAIL_TIMEOUT', 10),
+
     /*
     |--------------------------------------------------------------------------
     | Markdown Mail Settings

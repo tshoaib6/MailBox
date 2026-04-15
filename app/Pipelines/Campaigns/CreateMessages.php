@@ -70,17 +70,22 @@ class CreateMessages extends \Sendportal\Base\Pipelines\Campaigns\CreateMessages
     }
 
     /**
-     * Dispatch now, including previously queued draft messages.
-     * This allows a campaign that was queued as draft to be switched to auto-send.
+     * Dispatch now, but never re-send a message that has already been attempted or sent.
+     * Only re-dispatch a message that was saved as draft (queued_at set, attempted_at null, sent_at null).
      */
     protected function dispatchNow(Campaign $campaign, Subscriber $subscriber): Message
     {
         if ($message = $this->findMessage($campaign, $subscriber)) {
-            if (is_null($message->sent_at)) {
-                \Log::info('Dispatching existing queued message campaign=' . $campaign->id . ' subscriber=' . $subscriber->id);
+            // If already sent or already attempted, do nothing — prevent double-sending.
+            if ($message->sent_at !== null || $message->attempted_at !== null) {
+                \Log::info('Message already sent/attempted, skipping campaign=' . $campaign->id . ' subscriber=' . $subscriber->id);
+                return $message;
+            }
+
+            // Only re-dispatch if it's a pure draft (queued_at set, never attempted).
+            if ($message->queued_at !== null) {
+                \Log::info('Dispatching existing draft message campaign=' . $campaign->id . ' subscriber=' . $subscriber->id);
                 event(new MessageDispatchEvent($message));
-            } else {
-                \Log::info('Message already sent campaign=' . $campaign->id . ' subscriber=' . $subscriber->id);
             }
 
             return $message;

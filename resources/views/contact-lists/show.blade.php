@@ -1,5 +1,22 @@
 @extends('sendportal::layouts.app')
 
+@push('css')
+<style>
+    .main-header,
+    .main-content {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .contact-list-visible-shell {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+</style>
+@endpush
+
 @section('title', __('Contact List Contacts'))
 
 @section('heading')
@@ -18,6 +35,8 @@
 
     $columns = is_array($columns) ? $columns : [];
 @endphp
+
+<div class="contact-list-visible-shell">
 
 <div class="row mb-4">
     <div class="col-md-12">
@@ -80,10 +99,25 @@
                                 if (is_array($value)) {
                                     $value = implode(', ', $value);
                                 }
+
+                                $displayValue = ($value === null || $value === '') ? '—' : (string) $value;
+
+                                // Guard against malformed UTF-8 coming from imported CSV/Excel content.
+                                if ($displayValue !== '—' && function_exists('iconv')) {
+                                    $converted = @iconv('UTF-8', 'UTF-8//IGNORE', $displayValue);
+                                    if ($converted !== false) {
+                                        $displayValue = $converted;
+                                    }
+                                }
                             @endphp
-                            <td>{{ ($value === null || $value === '') ? '—' : $value }}</td>
+                            <td>{{ $displayValue }}</td>
                         @endforeach
-                        <td class="text-center">{{ \Illuminate\Support\Carbon::parse($subscriber->created_at)->format('M d, Y H:i') }}</td>
+                        <td class="text-center">
+                            @php
+                                $timestamp = is_string($subscriber->created_at) ? strtotime($subscriber->created_at) : false;
+                            @endphp
+                            {{ $timestamp ? date('M d, Y H:i', $timestamp) : '—' }}
+                        </td>
                     </tr>
                 @empty
                     <tr>
@@ -97,6 +131,8 @@
     <div class="card-body">
         {{ $subscribers->links() }}
     </div>
+</div>
+
 </div>
 
 @endsection

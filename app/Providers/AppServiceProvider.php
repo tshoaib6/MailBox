@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Adapters\SmtpAdapter;
+use App\Adapters\Smtp2goAdapter;
 use App\LiveWire\Setup;
 use App\Models\ApiToken;
 use App\Models\ContactList;
@@ -14,7 +16,9 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use RuntimeException;
+use Sendportal\Base\Factories\MailAdapterFactory;
 use Sendportal\Base\Models\Campaign;
+use Sendportal\Base\Models\EmailServiceType;
 use Sendportal\Base\Facades\Sendportal;
 use Sendportal\Base\Models\Subscriber;
 
@@ -41,6 +45,15 @@ class AppServiceProvider extends ServiceProvider
             \Sendportal\Base\Services\Messages\MarkAsSent::class,
             \App\Services\Messages\MarkAsSent::class
         );
+
+        $this->app->bind(
+            \Sendportal\Base\Services\Messages\DispatchMessage::class,
+            \App\Services\Messages\DispatchMessage::class
+        );
+
+        MailAdapterFactory::$adapterMap[EmailServiceType::SMTP] = SmtpAdapter::class;
+        // Register smtp2go API adapter (type_id = 8)
+        MailAdapterFactory::$adapterMap[8] = Smtp2goAdapter::class;
 
         $this->app->bind(
             \Sendportal\Base\Http\Controllers\Subscribers\SubscribersImportController::class,
