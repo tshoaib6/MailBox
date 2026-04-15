@@ -207,5 +207,23 @@ class AppServiceProvider extends ServiceProvider
             }
             $view->with('contactLists', $contactLists);
         });
+
+        // Inject contact lists into the subscribers index view (our custom view expects $contactLists).
+        // This works regardless of which controller dispatches the view.
+        View::composer('sendportal::subscribers.index', function ($view) {
+            if (array_key_exists('contactLists', $view->getData())) {
+                return; // Already set by controller — don't overwrite.
+            }
+            try {
+                $workspaceId = Sendportal::currentWorkspaceId();
+                $contactLists = ContactList::withCount('subscribers')
+                    ->where('workspace_id', $workspaceId)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+            } catch (\Throwable $e) {
+                $contactLists = collect();
+            }
+            $view->with('contactLists', $contactLists);
+        });
     }
 }
