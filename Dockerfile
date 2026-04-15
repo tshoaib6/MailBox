@@ -1,4 +1,4 @@
-FROM php:8.3-fpm-alpine AS base
+FROM php:8.4-fpm-alpine AS base
 
 # ─── System packages ──────────────────────────────────────────────────────────
 RUN apk add --no-cache \
@@ -68,7 +68,7 @@ COPY docker/vendor-patches/mettle/sendportal-core/src/Services/QuotaService.php 
      vendor/mettle/sendportal-core/src/Services/QuotaService.php
 
 # ─── Finalise autoloader ──────────────────────────────────────────────────────
-RUN composer dump-autoload --no-dev --optimize
+RUN composer dump-autoload --no-dev --optimize --ignore-platform-reqs
 
 # Publish vendor assets (JS/CSS) using a temporary key — real key set at runtime
 RUN APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= \
