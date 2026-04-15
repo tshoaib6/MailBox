@@ -22,6 +22,10 @@ echo "--> MySQL is ready."
 echo "--> Running migrations..."
 php artisan migrate --force
 
+echo "--> Fixing storage permissions..."
+chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+chmod -R ug+rw /var/www/storage /var/www/bootstrap/cache
+
 echo "--> Creating storage symlink..."
 php artisan storage:link --force 2>/dev/null || true
 
