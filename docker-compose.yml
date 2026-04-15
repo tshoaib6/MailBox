@@ -34,6 +34,7 @@ services:
 
       MAIL_MAILER: smtp
       MAIL_TIMEOUT: 60
+      SEND_RATE_PER_HOUR: ${SEND_RATE_PER_HOUR:-0}
     volumes:
       - storage_uploads:/var/www/storage/app/public
       - storage_logs:/var/www/storage/logs
