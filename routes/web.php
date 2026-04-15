@@ -6,6 +6,10 @@ use App\Http\Controllers\Campaigns\CampaignContactPreviewController;
 use App\Http\Controllers\Campaigns\CampaignsController;
 use App\Http\Controllers\Campaigns\CampaignDispatchController;
 use App\Http\Controllers\Campaigns\CampaignTestController;
+use Sendportal\Base\Http\Controllers\Campaigns\CampaignsController as VendorCampaignsController;
+use Sendportal\Base\Http\Controllers\Campaigns\CampaignDeleteController;
+use Sendportal\Base\Http\Controllers\Campaigns\CampaignDuplicateController;
+use Sendportal\Base\Http\Controllers\Campaigns\CampaignCancellationController;
 use App\Http\Controllers\Tracking\EmailOpenTrackingController;
 use App\Http\Controllers\Subscribers\ContactListsController;
 use App\Http\Controllers\Subscribers\SubscribersImportController;
@@ -122,20 +126,28 @@ Route::middleware(['auth', 'verified', RequireWorkspace::class])->group(
         Route::post('subscribers/import', [SubscribersImportController::class, 'store']);
         Route::get('subscribers', [SubscribersController::class, 'index']);
 
+        // Campaign literal routes — must come BEFORE {id} catch-alls so they are never swallowed.
+        Route::get('campaigns/create', [VendorCampaignsController::class, 'create'])->name('sendportal.campaigns.create');
+        Route::get('campaigns/sent', [VendorCampaignsController::class, 'sent'])->name('sendportal.campaigns.sent');
+        Route::get('campaigns/{id}/confirm-delete', [CampaignDeleteController::class, 'confirm'])->name('sendportal.campaigns.destroy.confirm');
+        Route::delete('campaigns', [CampaignDeleteController::class, 'destroy'])->name('sendportal.campaigns.destroy');
+        Route::get('campaigns/{id}/duplicate', [CampaignDuplicateController::class, 'duplicate'])->name('sendportal.campaigns.duplicate');
+        Route::get('campaigns/{id}/confirm-cancel', [CampaignCancellationController::class, 'confirm'])->name('sendportal.campaigns.confirm-cancel');
+        Route::post('campaigns/{id}/cancel', [CampaignCancellationController::class, 'cancel'])->name('sendportal.campaigns.cancel');
+
         // Campaign overrides — URL-only, no name (vendor names still used by route() helper)
-        // {id} is constrained to digits so named sub-paths like /create, /sent etc. fall through to vendor routes.
         Route::post('campaigns', [CampaignsController::class, 'store']);
         Route::get('campaigns/{id}/download-not-sent', [CampaignsController::class, 'downloadNotSent'])
-            ->name('sendportal.campaigns.download-not-sent')->where('id', '[0-9]+');
+            ->name('sendportal.campaigns.download-not-sent');
         Route::post('campaigns/{id}/dispatch-now', [CampaignsController::class, 'dispatchNow'])
-            ->name('sendportal.campaigns.dispatch-now')->where('id', '[0-9]+');
+            ->name('sendportal.campaigns.dispatch-now');
         Route::get('campaigns/{id}/contact-preview', [CampaignContactPreviewController::class, 'show'])
-            ->name('sendportal.campaigns.contact-preview')->where('id', '[0-9]+');
-        Route::get('campaigns/{id}/preview', [CampaignsController::class, 'preview'])->where('id', '[0-9]+');
-        Route::post('campaigns/{id}/test', [CampaignTestController::class, 'handle'])->where('id', '[0-9]+');
-        Route::put('campaigns/{id}/send', [CampaignDispatchController::class, 'send'])->where('id', '[0-9]+');
-        Route::put('campaigns/{id}', [CampaignsController::class, 'update'])->where('id', '[0-9]+');
-        Route::get('campaigns/{id}', [CampaignsController::class, 'show'])->where('id', '[0-9]+');
+            ->name('sendportal.campaigns.contact-preview');
+        Route::get('campaigns/{id}/preview', [CampaignsController::class, 'preview']);
+        Route::post('campaigns/{id}/test', [CampaignTestController::class, 'handle']);
+        Route::put('campaigns/{id}/send', [CampaignDispatchController::class, 'send']);
+        Route::put('campaigns/{id}', [CampaignsController::class, 'update']);
+        Route::get('campaigns/{id}', [CampaignsController::class, 'show']);
 
         // Contact Lists Management
         Route::resource('contact-lists', ContactListsController::class);
