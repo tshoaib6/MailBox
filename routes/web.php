@@ -113,50 +113,38 @@ Route::namespace('Workspaces')->middleware(
 
 Route::middleware(['auth', 'verified', RequireWorkspace::class])->group(
     static function () {
-        Sendportal::webRoutes();
+        // ── Our overrides (registered first so they take precedence for request handling) ──
+        // These routes intentionally have no ->name() to avoid conflicts with the vendor's
+        // named routes registered by Sendportal::webRoutes() below.
 
-        // Override vendor import routes (registered after so they take precedence).
-        // Fixes: vendor hardcodes .csv extension, breaking Excel (.xlsx) uploads.
-        Route::get('subscribers/import', [SubscribersImportController::class, 'show'])
-            ->name('sendportal.subscribers.import');
-        Route::post('subscribers/import', [SubscribersImportController::class, 'store'])
-            ->name('sendportal.subscribers.import.store');
+        // Subscriber overrides — URL-only, no name (vendor names still used by route() helper)
+        Route::get('subscribers/import', [SubscribersImportController::class, 'show']);
+        Route::post('subscribers/import', [SubscribersImportController::class, 'store']);
+        Route::get('subscribers', [SubscribersController::class, 'index']);
 
-        // Contact Lists Management
-        Route::resource('contact-lists', ContactListsController::class);
-        // Override subscribers index to show contact lists instead of individual subscribers.
-        Route::get('subscribers', [SubscribersController::class, 'index'])
-            ->name('sendportal.subscribers.index');
-
-        // Campaign contact-preview endpoint (returns rendered HTML with real subscriber data).
-        Route::post('campaigns', [CampaignsController::class, 'store'])
-            ->name('sendportal.campaigns.store');
-        Route::get('campaigns/{id}', [CampaignsController::class, 'show'])
-            ->name('sendportal.campaigns.show');
+        // Campaign overrides — URL-only, no name (vendor names still used by route() helper)
+        Route::post('campaigns', [CampaignsController::class, 'store']);
         Route::get('campaigns/{id}/download-not-sent', [CampaignsController::class, 'downloadNotSent'])
             ->name('sendportal.campaigns.download-not-sent');
         Route::post('campaigns/{id}/dispatch-now', [CampaignsController::class, 'dispatchNow'])
             ->name('sendportal.campaigns.dispatch-now');
-        Route::put('campaigns/{id}', [CampaignsController::class, 'update'])
-            ->name('sendportal.campaigns.update');
-        Route::get('campaigns/{id}/preview', [CampaignsController::class, 'preview'])
-            ->name('sendportal.campaigns.preview');
-
-        // Campaign contact-preview endpoint (returns rendered HTML with real subscriber data).
         Route::get('campaigns/{id}/contact-preview', [CampaignContactPreviewController::class, 'show'])
             ->name('sendportal.campaigns.contact-preview');
+        Route::get('campaigns/{id}/preview', [CampaignsController::class, 'preview']);
+        Route::post('campaigns/{id}/test', [CampaignTestController::class, 'handle']);
+        Route::put('campaigns/{id}/send', [CampaignDispatchController::class, 'send']);
+        Route::put('campaigns/{id}', [CampaignsController::class, 'update']);
+        Route::get('campaigns/{id}', [CampaignsController::class, 'show']);
 
-        // Override campaign test route to support subscriber variable substitution.
-        Route::post('campaigns/{id}/test', [CampaignTestController::class, 'handle'])
-            ->name('sendportal.campaigns.test');
-
-        // Override campaign send route to scope recipients to the selected contact list.
-        Route::put('campaigns/{id}/send', [CampaignDispatchController::class, 'send'])
-            ->name('sendportal.campaigns.send');
+        // Contact Lists Management
+        Route::resource('contact-lists', ContactListsController::class);
 
         // API endpoints
         Route::get('api/contact-lists/{id}/mappings', [ContactListMappingsController::class, 'show'])
             ->name('api.contact-list-mappings');
+
+        // ── Vendor routes (provides all named routes for URL generation) ───────────────
+        Sendportal::webRoutes();
     }
 );
 
