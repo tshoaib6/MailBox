@@ -59,6 +59,11 @@ class AppServiceProvider extends ServiceProvider
             \Sendportal\Base\Http\Controllers\Subscribers\SubscribersImportController::class,
             \App\Http\Controllers\Subscribers\SubscribersImportController::class
         );
+
+        $this->app->bind(
+            \Sendportal\Base\Http\Controllers\Campaigns\CampaignsController::class,
+            \App\Http\Controllers\Campaigns\CampaignsController::class
+        );
     }
 
     public function boot(): void
