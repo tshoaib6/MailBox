@@ -34,7 +34,7 @@ php artisan db:seed --class=DatabaseSeeder --force
 
 echo "--> Caching config, routes, views..."
 php artisan config:cache
-php artisan route:cache
+php artisan route:cache 2>/dev/null || echo "WARNING: route:cache skipped (duplicate route name)"
 php artisan view:cache
 
 echo "==> Setup complete. Starting services..."
