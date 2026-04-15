@@ -39,4 +39,21 @@ return [
     |
     */
     'throttle_middleware' => 'throttle:'.env('SENDPORTAL_THROTTLE_MIDDLEWARE', '60,1'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sending Rate Limit
+    |--------------------------------------------------------------------------
+    |
+    | Maximum number of emails to send per hour across all campaigns.
+    | Set to 0 (or leave unset) to send at full speed.
+    |
+    | Recommended values when warming up a new sending domain/IP:
+    |   Day 1–2  : 25
+    |   Day 3–5  : 50
+    |   Day 6–10 : 100
+    |   After    : 0 (unlimited)
+    |
+    */
+    'send_rate_per_hour' => (int) env('SEND_RATE_PER_HOUR', 0),
 ];

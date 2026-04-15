@@ -50,21 +50,37 @@ class CreateMessages extends \Sendportal\Base\Pipelines\Campaigns\CreateMessages
     /**
      * Dispatch campaign recipients with per-recipient fault tolerance.
      * One bad address/provider error should not stop all remaining recipients.
+     *
+     * When SEND_RATE_PER_HOUR > 0 each dispatch is throttled so the total
+     * sending rate never exceeds that limit.  The sleep accounts for the time
+     * the actual API/SMTP call took, keeping the spacing accurate.
      */
     protected function dispatchToSubscriber(Campaign $campaign, $subscribers)
     {
         \Log::info('- Number of subscribers in this chunk: ' . count($subscribers));
+
+        $ratePerHour   = (int) config('sendportal-host.send_rate_per_hour', 0);
+        $intervalMicro = $ratePerHour > 0 ? (int) (3_600_000_000 / $ratePerHour) : 0;
 
         foreach ($subscribers as $subscriber) {
             if (! $this->canSendToSubscriber($campaign->id, $subscriber->id)) {
                 continue;
             }
 
+            $startMicro = hrtime(true);
+
             try {
                 $this->dispatch($campaign, $subscriber);
             } catch (\Throwable $e) {
                 \Log::error('Recipient dispatch failed campaign=' . $campaign->id . ' subscriber=' . $subscriber->id . ' email=' . ($subscriber->email ?? 'unknown') . ' error=' . $e->getMessage());
-                continue;
+            }
+
+            if ($intervalMicro > 0) {
+                $elapsed = (int) ((hrtime(true) - $startMicro) / 1_000); // ns → µs
+                $remaining = $intervalMicro - $elapsed;
+                if ($remaining > 0) {
+                    usleep($remaining);
+                }
             }
         }
     }
