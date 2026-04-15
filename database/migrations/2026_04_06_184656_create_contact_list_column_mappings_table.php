@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('contact_list_column_mappings')) {
+            return;
+        }
+
         Schema::create('contact_list_column_mappings', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('contact_list_id')->index();

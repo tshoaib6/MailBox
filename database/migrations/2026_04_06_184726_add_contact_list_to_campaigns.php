@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasColumn('sendportal_campaigns', 'contact_list_id')) {
+            return;
+        }
+
         Schema::table('sendportal_campaigns', function (Blueprint $table) {
             $table->unsignedBigInteger('contact_list_id')->nullable()->after('workspace_id')->index();
             $table->foreign('contact_list_id')->references('id')->on('contact_lists')->onDelete('set null');

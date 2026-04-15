@@ -7,6 +7,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::table('sendportal_email_service_types')->where('id', 8)->exists()) {
+            return;
+        }
+
         DB::table('sendportal_email_service_types')->insert([
             'id'         => 8,
             'name'       => 'Smtp2go',

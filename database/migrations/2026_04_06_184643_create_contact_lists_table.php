@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::hasTable('contact_lists')) {
+            return;
+        }
+
         Schema::create('contact_lists', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('workspace_id')->index();
+            $table->unsignedInteger('workspace_id')->index();
             $table->string('name');
             $table->json('columns')->nullable()->comment('Array of CSV column names: ["email", "first_name", "company"]');
             $table->timestamps();
