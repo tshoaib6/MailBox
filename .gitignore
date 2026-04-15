@@ -32,3 +32,4 @@ phpunit.xml
 /storage/framework/sessions/*
 /storage/logs/*.log
 
+docker-compose.override.yml
