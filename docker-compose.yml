@@ -6,7 +6,7 @@ services:
     container_name: sendportal_app
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8080:80"
     environment:
       APP_NAME: ${APP_NAME:-"Dnova Email Marketing"}
       APP_ENV: production
