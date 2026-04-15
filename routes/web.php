@@ -123,18 +123,19 @@ Route::middleware(['auth', 'verified', RequireWorkspace::class])->group(
         Route::get('subscribers', [SubscribersController::class, 'index']);
 
         // Campaign overrides — URL-only, no name (vendor names still used by route() helper)
+        // {id} is constrained to digits so named sub-paths like /create, /sent etc. fall through to vendor routes.
         Route::post('campaigns', [CampaignsController::class, 'store']);
         Route::get('campaigns/{id}/download-not-sent', [CampaignsController::class, 'downloadNotSent'])
-            ->name('sendportal.campaigns.download-not-sent');
+            ->name('sendportal.campaigns.download-not-sent')->where('id', '[0-9]+');
         Route::post('campaigns/{id}/dispatch-now', [CampaignsController::class, 'dispatchNow'])
-            ->name('sendportal.campaigns.dispatch-now');
+            ->name('sendportal.campaigns.dispatch-now')->where('id', '[0-9]+');
         Route::get('campaigns/{id}/contact-preview', [CampaignContactPreviewController::class, 'show'])
-            ->name('sendportal.campaigns.contact-preview');
-        Route::get('campaigns/{id}/preview', [CampaignsController::class, 'preview']);
-        Route::post('campaigns/{id}/test', [CampaignTestController::class, 'handle']);
-        Route::put('campaigns/{id}/send', [CampaignDispatchController::class, 'send']);
-        Route::put('campaigns/{id}', [CampaignsController::class, 'update']);
-        Route::get('campaigns/{id}', [CampaignsController::class, 'show']);
+            ->name('sendportal.campaigns.contact-preview')->where('id', '[0-9]+');
+        Route::get('campaigns/{id}/preview', [CampaignsController::class, 'preview'])->where('id', '[0-9]+');
+        Route::post('campaigns/{id}/test', [CampaignTestController::class, 'handle'])->where('id', '[0-9]+');
+        Route::put('campaigns/{id}/send', [CampaignDispatchController::class, 'send'])->where('id', '[0-9]+');
+        Route::put('campaigns/{id}', [CampaignsController::class, 'update'])->where('id', '[0-9]+');
+        Route::get('campaigns/{id}', [CampaignsController::class, 'show'])->where('id', '[0-9]+');
 
         // Contact Lists Management
         Route::resource('contact-lists', ContactListsController::class);
