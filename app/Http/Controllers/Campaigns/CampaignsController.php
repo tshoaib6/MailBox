@@ -56,7 +56,6 @@ class CampaignsController extends BaseCampaignsController
         return redirect()->route('sendportal.campaigns.show', $id)
             ->with('success', __('Campaign sent immediately. Refresh to see status.'));
     }
-{
     /**
      * Manually dispatch a campaign immediately.
      *
