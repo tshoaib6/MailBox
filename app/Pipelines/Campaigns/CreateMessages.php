@@ -54,6 +54,8 @@ class CreateMessages extends \Sendportal\Base\Pipelines\Campaigns\CreateMessages
      * When SEND_RATE_PER_HOUR > 0 each dispatch is throttled so the total
      * sending rate never exceeds that limit.  The sleep accounts for the time
      * the actual API/SMTP call took, keeping the spacing accurate.
+     * 
+     * Additionally, a fixed 1-minute delay is enforced between each email.
      */
     protected function dispatchToSubscriber(Campaign $campaign, $subscribers)
     {
@@ -61,6 +63,9 @@ class CreateMessages extends \Sendportal\Base\Pipelines\Campaigns\CreateMessages
 
         $ratePerHour   = (int) config('sendportal-host.send_rate_per_hour', 0);
         $intervalMicro = $ratePerHour > 0 ? (int) (3_600_000_000 / $ratePerHour) : 0;
+        
+        // Fixed 1-minute delay between emails (60 seconds = 60,000,000 microseconds)
+        $oneMinuteMicro = 60_000_000;
 
         foreach ($subscribers as $subscriber) {
             if (! $this->canSendToSubscriber($campaign->id, $subscriber->id)) {
@@ -75,12 +80,15 @@ class CreateMessages extends \Sendportal\Base\Pipelines\Campaigns\CreateMessages
                 \Log::error('Recipient dispatch failed campaign=' . $campaign->id . ' subscriber=' . $subscriber->id . ' email=' . ($subscriber->email ?? 'unknown') . ' error=' . $e->getMessage());
             }
 
-            if ($intervalMicro > 0) {
-                $elapsed = (int) ((hrtime(true) - $startMicro) / 1_000); // ns → µs
-                $remaining = $intervalMicro - $elapsed;
-                if ($remaining > 0) {
-                    usleep($remaining);
-                }
+            // Calculate delay: use the maximum of rate-limited delay and 1-minute fixed delay
+            $elapsed = (int) ((hrtime(true) - $startMicro) / 1_000); // ns → µs
+            
+            $delayMicro = max($intervalMicro, $oneMinuteMicro);
+            $remaining = $delayMicro - $elapsed;
+            
+            if ($remaining > 0) {
+                \Log::info('Sleeping for ' . round($remaining / 1_000_000, 2) . ' seconds before next email');
+                usleep($remaining);
             }
         }
     }
