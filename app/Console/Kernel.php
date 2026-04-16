@@ -30,6 +30,12 @@ class Kernel extends ConsoleKernel
             ->everyFifteenMinutes()
             ->withoutOverlapping()
             ->appendOutputTo(storage_path('logs/smtp2go-sync.log'));
+
+        // Dispatch queued campaigns every minute with automatic 1-minute gaps between emails
+        $schedule->command('sp:campaigns:dispatch')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->appendOutputTo(storage_path('logs/campaign-dispatch.log'));
     }
 
     /**
