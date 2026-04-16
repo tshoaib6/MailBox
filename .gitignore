@@ -1,35 +1,27 @@
-/node_modules
-/public/hot
-/public/storage
-/storage/*.key
-/storage/laracatch
-/vendor
+```
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+
+# Dependencies
+vendor/
+composer.lock
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Environment
 .env
-.env.backup
-.env.testing
-.phpunit.result.cache
-Homestead.json
-Homestead.yaml
-npm-debug.log
-yarn-error.log
-.idea
+.env.local
+*.env.*
 
-# Track our customised sendportal vendor views (smtp2go settings form, etc.)
-resources/lang/vendor/
-# resources/views/vendor/ — NOT ignored so our custom views are committed
+# Editors
+.vscode/
+.idea/
 
-# Track public/vendor assets (published from sendportal package)
-# public/vendor/ — NOT ignored so they are included in Docker builds
-
-# composer.lock SHOULD be committed for reproducible Docker builds
-# composer.lock — NOT ignored
-
-phpunit.xml
-
-# Storage caches (never commit runtime cache files)
-/storage/framework/cache/data/*
-/storage/framework/views/*
-/storage/framework/sessions/*
-/storage/logs/*.log
-
-docker-compose.override.yml
+# OS generated files
+.DS_Store
+Thumbs.db
+```
