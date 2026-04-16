@@ -16,6 +16,7 @@ use Sendportal\Base\Models\CampaignStatus;
 use Sendportal\Base\Models\Message;
 
 class CampaignsController extends BaseCampaignsController
+{
     /**
      * Force send campaign immediately, bypassing the queue.
      */
