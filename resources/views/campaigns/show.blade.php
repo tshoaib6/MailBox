@@ -23,7 +23,13 @@
                 <form action="{{ route('sendportal.campaigns.dispatch-now', $campaign->id) }}" method="POST" style="display:inline;">
                     @csrf
                     <button type="submit" class="btn btn-success">
-                        <i class="fa fa-bolt"></i> {{ __('Dispatch Now') }}
+                        <i class="fa fa-bolt"></i> {{ __('Dispatch Now (Queue)') }}
+                    </button>
+                </form>
+                <form action="{{ route('sendportal.campaigns.force-send', $campaign->id) }}" method="POST" style="display:inline; margin-left: 5px;">
+                    @csrf
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa fa-bolt"></i> {{ __('Force Send Now (Bypass Queue)') }}
                     </button>
                 </form>
             @endif

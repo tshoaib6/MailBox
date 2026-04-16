@@ -16,6 +16,45 @@ use Sendportal\Base\Models\CampaignStatus;
 use Sendportal\Base\Models\Message;
 
 class CampaignsController extends BaseCampaignsController
+    /**
+     * Force send campaign immediately, bypassing the queue.
+     */
+    public function forceSendNow(int $id): \Illuminate\Http\RedirectResponse
+    {
+        $workspaceId = \Sendportal\Base\Facades\Sendportal::currentWorkspaceId();
+        $campaign = $this->campaigns->find($workspaceId, $id, ['tags', 'status']);
+
+        if (! $campaign) {
+            return redirect()->route('sendportal.campaigns.index')
+                ->with('error', __('Campaign not found.'));
+        }
+
+        if ($campaign->sent) {
+            return redirect()->route('sendportal.campaigns.show', $id)
+                ->with('success', __('Campaign has already been sent.'));
+        }
+
+        // Set status to QUEUED if not already
+        if (! $campaign->queued) {
+            $campaign->update([
+                'save_as_draft' => false,
+                'scheduled_at' => now(),
+                'status_id' => \Sendportal\Base\Models\CampaignStatus::STATUS_QUEUED,
+            ]);
+        }
+
+        // Bypass queue: run dispatch synchronously
+        try {
+            app(\App\Services\Campaigns\CampaignDispatchService::class)->handle($campaign);
+        } catch (\Throwable $e) {
+            \Log::error('Force send failed: ' . $e->getMessage());
+            return redirect()->route('sendportal.campaigns.show', $id)
+                ->with('error', __('Force send failed: ') . $e->getMessage());
+        }
+
+        return redirect()->route('sendportal.campaigns.show', $id)
+            ->with('success', __('Campaign sent immediately. Refresh to see status.'));
+    }
 {
     /**
      * Manually dispatch a campaign immediately.

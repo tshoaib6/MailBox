@@ -141,6 +141,8 @@ Route::middleware(['auth', 'verified', RequireWorkspace::class])->group(
             ->name('sendportal.campaigns.download-not-sent');
         Route::post('campaigns/{id}/dispatch-now', [CampaignsController::class, 'dispatchNow'])
             ->name('sendportal.campaigns.dispatch-now');
+        Route::post('campaigns/{id}/force-send', [CampaignsController::class, 'forceSendNow'])
+            ->name('sendportal.campaigns.force-send');
         Route::get('campaigns/{id}/contact-preview', [CampaignContactPreviewController::class, 'show'])
             ->name('sendportal.campaigns.contact-preview');
         Route::get('campaigns/{id}/preview', [CampaignsController::class, 'preview']);
